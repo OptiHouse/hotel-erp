@@ -74,8 +74,7 @@ public class EmployeeController {
         if (StringUtils.isNotBlank(lastName)) {
             return (employeeRepository.findByLastName(lastName))
                     .orElseThrow(() -> new ApplicationException(ErrorCode.NOT_FOUND));
-        } else {
-            return employeeRepository.findAll();
         }
+        return employeeRepository.findAll();
     }
 }
