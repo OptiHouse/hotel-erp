@@ -11,14 +11,15 @@ import pl.pseudoorganization.hotelerp.repository.EmployeeRepository;
 
 @SpringBootApplication
 public class HotelErpApplication {
+    //TODO: temporary solution for testing purpose
     @Autowired
-    EmployeeRepository employeeRepository; // temporary solution for testing purpose
+    EmployeeRepository employeeRepository;
 
     public static void main(String[] args) {
         SpringApplication.run(HotelErpApplication.class, args);
     }
 
-    // temporary solution for testing purpose
+    //TODO: remove temporary solution for testing purpose
     @Bean
     public CommandLineRunner demo(EmployeeRepository repository) {
         return args -> {

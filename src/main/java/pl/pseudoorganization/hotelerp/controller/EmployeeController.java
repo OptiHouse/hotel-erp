@@ -25,45 +25,26 @@ public class EmployeeController {
     }
 
     @GetMapping()
-    public ResponseEntity getAllEmployees(@RequestParam(required = false) String lastName,
-                                          @RequestParam(required = false) String role) {
-        try {
-            return new ResponseEntity<>(getEmployeesByParam(lastName, role), HttpStatus.OK);
-        } catch (ApplicationException e) {
-            return handleApplicationException(e);
-        }
+    public ResponseEntity<Object> getAllEmployees(@RequestParam(required = false) String lastName,
+                                                   @RequestParam(required = false) String role) throws ApplicationException {
+        return new ResponseEntity<>(getEmployeesByParam(lastName, role), HttpStatus.OK);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity getEmployeeById(@PathVariable("id") String id) {
-        try {
-            Employee employee = employeeRepository.findById(Long.parseLong(id))
-                    .orElseThrow(() -> new ApplicationException(ErrorCode.NOT_FOUND));
-            return new ResponseEntity<>(employee, HttpStatus.OK);
-        } catch (ApplicationException e) {
-            return handleApplicationException(e);
-        }
+    public ResponseEntity<Object> getEmployeeById(@PathVariable("id") String id) throws ApplicationException {
+        Employee employee = employeeRepository.findById(Long.parseLong(id))
+                .orElseThrow(() -> new ApplicationException(ErrorCode.NOT_FOUND));
+        return new ResponseEntity<>(employee, HttpStatus.OK);
     }
 
     @PostMapping()
-    public ResponseEntity addEmployee(@RequestBody EmployeeRequest employee) {
-        try {
-            Optional<Employee> existingEmployee = employeeRepository.findByFirstNameAndLastName(employee.getFirstName(), employee.getLastName());
-            if (existingEmployee.isPresent()) {
-                return new ResponseEntity<>(ErrorCode.USER_ALREADY_EXISTS, HttpStatus.BAD_REQUEST);
-            }
-            employeeRepository.save(new Employee(employee));
-            return new ResponseEntity<>(HttpStatus.CREATED);
-        } catch (Exception e) {
-            return new ResponseEntity<>(ErrorCode.OTHER_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
+    public ResponseEntity<Object> addEmployee(@RequestBody EmployeeRequest employee) throws ApplicationException {
+        Optional<Employee> existingEmployee = employeeRepository.findByFirstNameAndLastName(employee.getFirstName(), employee.getLastName());
+        if (existingEmployee.isPresent()) {
+            throw new ApplicationException(ErrorCode.USER_ALREADY_EXISTS);
         }
-    }
-
-    private static ResponseEntity<ErrorCode> handleApplicationException(ApplicationException e) {
-        if (e.getErrorCode() == ErrorCode.NOT_FOUND)
-            return new ResponseEntity<>(ErrorCode.NOT_FOUND, HttpStatus.NOT_FOUND);
-        else
-            return new ResponseEntity<>(ErrorCode.OTHER_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
+        employeeRepository.save(new Employee(employee));
+        return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
     private List<Employee> getEmployeesByParam(String lastName, String role) throws ApplicationException {
