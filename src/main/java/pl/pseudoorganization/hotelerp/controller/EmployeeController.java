@@ -1,8 +1,7 @@
 package pl.pseudoorganization.hotelerp.controller;
 
 import io.micrometer.common.util.StringUtils;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import jakarta.annotation.Nullable;
 import org.springframework.web.bind.annotation.*;
 import pl.pseudoorganization.hotelerp.error.ApplicationException;
 import pl.pseudoorganization.hotelerp.error.ErrorCode;
@@ -25,26 +24,26 @@ public class EmployeeController {
     }
 
     @GetMapping()
-    public ResponseEntity<Object> getAllEmployees(@RequestParam(required = false) String lastName,
-                                                   @RequestParam(required = false) String role) throws ApplicationException {
-        return new ResponseEntity<>(getEmployeesByParam(lastName, role), HttpStatus.OK);
+    public List<Employee> getAllEmployees(@RequestParam(required = false) @Nullable String lastName,
+                                                   @RequestParam(required = false) @Nullable String role) throws ApplicationException {
+        return getEmployeesByParam(lastName, role);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Object> getEmployeeById(@PathVariable("id") String id) throws ApplicationException {
-        Employee employee = employeeRepository.findById(Long.parseLong(id))
+    public Employee getEmployeeById(@PathVariable("id") String id) throws ApplicationException {
+        return employeeRepository.findById(Long.parseLong(id))
                 .orElseThrow(() -> new ApplicationException(ErrorCode.NOT_FOUND));
-        return new ResponseEntity<>(employee, HttpStatus.OK);
     }
 
     @PostMapping()
-    public ResponseEntity<Object> addEmployee(@RequestBody EmployeeRequest employee) throws ApplicationException {
-        Optional<Employee> existingEmployee = employeeRepository.findByFirstNameAndLastName(employee.getFirstName(), employee.getLastName());
+    public Employee addEmployee(@RequestBody EmployeeRequest employeeRequest) throws ApplicationException {
+        Optional<Employee> existingEmployee = employeeRepository.findByFirstNameAndLastName(employeeRequest.getFirstName(), employeeRequest.getLastName());
         if (existingEmployee.isPresent()) {
             throw new ApplicationException(ErrorCode.USER_ALREADY_EXISTS);
         }
-        employeeRepository.save(new Employee(employee));
-        return new ResponseEntity<>(HttpStatus.CREATED);
+        Employee employee = new Employee(employeeRequest);
+        employeeRepository.save(employee);
+        return employee;
     }
 
     private List<Employee> getEmployeesByParam(String lastName, String role) throws ApplicationException {

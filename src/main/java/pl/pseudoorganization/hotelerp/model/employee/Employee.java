@@ -48,6 +48,13 @@ public class Employee {
         this.role = EmployeeRole.createByCode(employeeRequest.getRole());
     }
 
+    public void changeRole(EmployeeRole newRole) {
+        if (newRole != null)
+            this.role = newRole;
+        else
+            throw new IllegalArgumentException("Role cannot be null");
+    }
+
     @Override
     public String toString() {
         return "Employee{" +
