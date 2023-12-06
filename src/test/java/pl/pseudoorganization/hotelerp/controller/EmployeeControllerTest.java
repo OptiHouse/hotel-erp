@@ -9,10 +9,9 @@ import pl.pseudoorganization.hotelerp.error.ApplicationException;
 import pl.pseudoorganization.hotelerp.model.employee.Employee;
 import pl.pseudoorganization.hotelerp.model.employee.EmployeeRequest;
 import pl.pseudoorganization.hotelerp.model.employee.EmployeeRole;
-import pl.pseudoorganization.hotelerp.repository.EmployeeRepository;
+import pl.pseudoorganization.hotelerp.services.EmployeeService;
 
 import java.util.List;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -22,7 +21,7 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class EmployeeControllerTest {
     @Mock
-    private EmployeeRepository employeeRepository;
+    private EmployeeService employeeService;
 
     @InjectMocks
     private EmployeeController employeeController;
@@ -35,15 +34,22 @@ class EmployeeControllerTest {
                 .lastName("Doe")
                 .role(EmployeeRole.MANAGER.getCode())
                 .build();
+        var employee = Employee.builder()
+                .id(1L)
+                .firstName("John")
+                .lastName("Doe")
+                .role(EmployeeRole.MANAGER)
+                .build();
 
         // when
+        when(employeeService.addEmployee(employeeRequest)).thenReturn(employee);
         var response = employeeController.addEmployee(employeeRequest);
 
         // then
         assertEquals(employeeRequest.getFirstName(), response.getFirstName());
         assertEquals(employeeRequest.getLastName(), response.getLastName());
         assertEquals(EmployeeRole.MANAGER, response.getRole());
-        verify(employeeRepository).save(any());
+        verify(employeeService).addEmployee(any());
     }
 
     @Test
@@ -58,7 +64,7 @@ class EmployeeControllerTest {
                 .build();
 
         // when
-        when(employeeRepository.findById(employeeId)).thenReturn(Optional.of(employee));
+        when(employeeService.getEmployeeById(String.valueOf(employeeId))).thenReturn(employee);
         var response = employeeController.getEmployeeById(String.valueOf(employeeId));
 
         // then
@@ -76,7 +82,7 @@ class EmployeeControllerTest {
         );
 
         // when
-        when(employeeRepository.findAll()).thenReturn(employees);
+        when(employeeService.getAllEmployees(null, null)).thenReturn(employees);
         var response = employeeController.getAllEmployees(null, null);
 
         // then
